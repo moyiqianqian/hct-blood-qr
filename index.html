@@ -1,146 +1,170 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>请输入红细胞压积 → 查询最低血量</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>红细胞压积采血量计算</title>
   <style>
-    :root{--bg:#0b1220;--card:#0f1b33;--text:#e8eefc;--muted:#a9b6d6;--accent:#4f8cff;--danger:#ff5c7a;}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Microsoft YaHei";background:linear-gradient(180deg,#071022,#0b1220);color:var(--text)}
-    .wrap{max-width:980px;margin:0 auto;padding:22px 16px 40px}
-    .hero{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-    h1{font-size:20px;margin:0 0 8px}
-    .sub{color:var(--muted);line-height:1.5;margin:0}
-    .card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.25);backdrop-filter: blur(8px);}
-    .panel{padding:16px}
-    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    label{font-size:14px;color:var(--muted)}
-    input{width:220px;max-width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.25);color:var(--text);outline:none}
-    input:focus{border-color:rgba(79,140,255,0.7);box-shadow:0 0 0 4px rgba(79,140,255,0.18)}
-    button{padding:10px 14px;border-radius:12px;border:0;background:linear-gradient(180deg,#5aa3ff,#4f8cff);color:white;font-weight:700;cursor:pointer}
-    button:active{transform:translateY(1px)}
-    .hint{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5}
-    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:14px;margin-top:14px}
-    th,td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left}
-    th{background:rgba(255,255,255,0.04);color:var(--muted);font-weight:700;font-size:13px}
-    tr:last-child td{border-bottom:0}
-    .val{font-variant-numeric: tabular-nums; font-weight:700}
-    .err{color:var(--danger);font-size:13px;margin-top:10px;display:none}
-    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(79,140,255,0.12);border:1px solid rgba(79,140,255,0.25);color:#cfe2ff;font-size:12px;font-weight:700}
-    .footerNote{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.6}
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      background: #071122;
+      color: #eaf2ff;
+      padding: 24px;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    h1 { font-size: 24px; margin: 0 0 24px; font-weight: 800; }
+    .card {
+      background: #111b2d;
+      border: 1px solid #26354f;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.28);
+    }
+    label { display: block; color: #a9bbd6; margin-bottom: 8px; font-weight: 700; }
+    .controls { display: grid; grid-template-columns: 1fr 160px; gap: 12px; align-items: end; }
+    input {
+      width: 100%;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid #33435f;
+      background: #050b1a;
+      color: #fff;
+      padding: 0 18px;
+      font-size: 22px;
+      outline: none;
+    }
+    button {
+      height: 54px;
+      border: 0;
+      border-radius: 14px;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .hint { margin: 10px 0 18px; color: #8ea2c2; font-size: 14px; }
+    .error { margin: 8px 0 18px; color: #fca5a5; font-weight: 700; display: none; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 14px; }
+    thead th {
+      background: #202b3d;
+      color: #dce8fb;
+      text-align: left;
+      padding: 14px 18px;
+      font-size: 16px;
+    }
+    tbody td {
+      border-top: 1px solid #223049;
+      padding: 14px 18px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    tbody td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    .note {
+      margin-top: 22px;
+      padding: 18px 20px;
+      border-radius: 16px;
+      background: #fff7cc;
+      border: 2px solid #f59e0b;
+      color: #422006;
+    }
+    .note-title { font-size: 20px; font-weight: 900; margin-bottom: 10px; color: #9a3412; }
+    .note ol { margin: 0; padding-left: 22px; }
+    .note li { margin: 8px 0; font-size: 16px; line-height: 1.55; font-weight: 700; }
+    .formula { color: #b91c1c; font-weight: 900; }
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      h1 { font-size: 19px; }
+      .card { padding: 16px; }
+      .controls { grid-template-columns: 1fr; }
+      button { width: 100%; }
+      tbody td, thead th { padding: 13px 12px; font-size: 16px; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <div>
-        <h1>请输入红细胞压积（HCT）→ 查询各检查项目需要的血量</h1>
-        </div>
-    </div>
-
-    <div class="card panel" style="margin-top:16px">
-      <div class="row">
+  <main class="wrap">
+    <h1>请输入红细胞压积（HCT）→ 查询各检查项目需要的血量</h1>
+    <section class="card">
+      <div class="controls">
         <div>
-          <label for="hct">请输入红细胞压积</label><br/>
-          <input id="hct" inputmode="decimal" placeholder="例如 0.50" value="0.50" />
+          <label for="hct">请输入红细胞压积</label>
+          <input id="hct" type="number" inputmode="decimal" step="0.01" min="0" max="0.95" value="0.30" placeholder="例如：0.30" />
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button id="btn">查询</button>
-        </div>
+        <button id="calcBtn" type="button">查询</button>
       </div>
-      <div id="err" class="err">请输入有效的数字（0到1之间的红细胞压积更符合该公式的适用范围）。</div>
-      <table aria-label="计算结果">
+      <div class="hint">请输入 0 到 0.95 之间的红细胞压积，例如 0.30。</div>
+      <div id="error" class="error">请输入有效的红细胞压积，范围为 0 到 0.95。</div>
+
+      <table aria-label="各检查项目需要的血量">
         <thead>
           <tr>
             <th>项目</th>
             <th>需要的血量</th>
           </tr>
         </thead>
-        <tbody id="tbody"></tbody>
+        <tbody id="resultBody"></tbody>
       </table>
 
-
-    </div>
-  </div>
+      <section class="note" aria-label="重要备注">
+        <div class="note-title">⚠ 重要备注</div>
+        <ol>
+          <li>需同时多管采血时，不同管采血量需相加。</li>
+          <li>如有血清管：<span class="formula">血量 = 所有管相加后血量 -（血清管 - 1）× 0.1</span>。</li>
+          <li>如有疑问请与医生再次核对。</li>
+        </ol>
+      </section>
+    </section>
+  </main>
 
   <script>
-    function fmt(x){
-      if(!isFinite(x)) return "";
-      // 保留2位，贴合你表格常见显示
-      return (Math.round(x*100)/100).toFixed(2);
-    }
-
     const items = [
-      // 你指出的错位：肝功应为 0.50（而不是 0.50对应肝功之外的其他项目）
-      { name: "肝功", fn: (B1)=> 0.2/(1-B1)+0.1, idx:"B3" },
-      { name: "生化全套", fn: (B1)=> 0.32/(1-B1)+0.1, idx:"B4" },
-      { name: "血脂", fn: (B1)=> 0.18/(1-B1)+0.1, idx:"B5" },
-      { name: "肾功", fn: (B1)=> 0.16/(1-B1), idx:"B6" },
-      { name: "电解质+血糖", fn: (B1)=> 0.16/(1-B1)+0.1, idx:"B7" },
-      { name: "血浆氨", fn: (B1)=> 0.16/(1-B1)+0.1, idx:"B8" },
-      { name: "甲功三项", fn: (B1)=> 0.3/(1-B1)+0.1, idx:"B9" },
-      { name: "急诊乳酸", fn: (B1)=> 0.15/(1-B1)+0.1, idx:"B10" },
-      { name: "TRUST滴度+TP", fn: (B1)=> 0.3/(1-B1)+0.1, idx:"B11" },
-      { name: "乙肝二对半", fn: (B1)=> 0.45/(1-B1)+0.1, idx:"B12" },
-      { name: "乙肝二对半HCV,HIV,TP,TRUST", fn: (B1)=> 0.7/(1-B1)+0.1, idx:"B13" },
-      { name: "细胞因子（7项/12项）", fn: (B1)=> 0.1/(1-B1)+0.1, idx:"B14" },
-      { name: "自身免疫（ANA+抗核抗体谱16项）", fn: (B1)=> 0.15/(1-B1)+0.1, idx:"B15" },
-      { name: "白介素6", fn: (B1)=> 0.15/(1-B1)+0.1, idx:"B16" }
+      { name: "肝功", numerator: 0.2, extra: 0.1 },
+      { name: "生化全套", numerator: 0.32, extra: 0.1 },
+      { name: "血脂", numerator: 0.18, extra: 0.1 },
+      { name: "肾功", numerator: 0.16, extra: 0 },
+      { name: "电解质+血糖", numerator: 0.16, extra: 0.1 },
+      { name: "血浆氨", numerator: 0.16, extra: 0.1 },
+      { name: "甲功三项", numerator: 0.3, extra: 0.1 },
+      { name: "急诊乳酸", numerator: 0.15, extra: 0.1 },
+      { name: "TRUST滴度+TP", numerator: 0.3, extra: 0.1 },
+      { name: "乙肝二对半", numerator: 0.45, extra: 0.1 },
+      { name: "乙肝二对半HCV,HIV,TP,TRUST", numerator: 0.7, extra: 0.1 },
+      { name: "细胞因子（7项/12项）", numerator: 0.1, extra: 0.1 },
+      { name: "自身免疫（ANA+抗核抗体谱16项）", numerator: 0.15, extra: 0.1 },
+      { name: "白介素6", numerator: 0.15, extra: 0.1 }
     ];
 
-    function render(B1){
-      const tbody = document.getElementById('tbody');
-      tbody.innerHTML = "";
-      items.forEach(it=>{
-        const v = it.fn(B1);
-        const tr = document.createElement('tr');
-        const td1 = document.createElement('td');
-        td1.textContent = it.name;
-        const td2 = document.createElement('td');
-        td2.className = 'val';
-        td2.textContent = fmt(v);
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        tbody.appendChild(tr);
-      });
+    const hctInput = document.getElementById("hct");
+    const calcBtn = document.getElementById("calcBtn");
+    const resultBody = document.getElementById("resultBody");
+    const errorBox = document.getElementById("error");
+
+    function formatNumber(value) {
+      return Number(value.toFixed(9)).toString();
     }
 
-    function isValidNum(x){
-      return typeof x === 'number' && isFinite(x);
+    function calculate() {
+      const hct = Number(hctInput.value);
+      const valid = Number.isFinite(hct) && hct >= 0 && hct < 0.95;
+      errorBox.style.display = valid ? "none" : "block";
+      if (!valid) return;
+
+      resultBody.innerHTML = items.map(item => {
+        const volume = item.numerator / (1 - hct) + item.extra;
+        return `<tr><td>${item.name}</td><td>${formatNumber(volume)}</td></tr>`;
+      }).join("");
     }
 
-    function query(){
-      const err = document.getElementById('err');
-      err.style.display = 'none';
-      const raw = document.getElementById('hct').value.trim();
-      const B1 = Number(raw);
-      if(!isValidNum(B1) || raw===""){
-        err.style.display = 'block';
-        return;
-      }
-      // 处理 B1=1 会导致除零
-      if(Math.abs(1-B1) < 1e-12){
-        err.textContent = '红细胞压积不能等于 1（会导致公式除以0）。';
-        err.style.display = 'block';
-        return;
-      }
-      render(B1);
-
-    }
-
-    document.getElementById('btn').addEventListener('click', query);
-    document.getElementById('hct').addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter') query();
+    calcBtn.addEventListener("click", calculate);
+    hctInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") calculate();
     });
-
-    // 默认渲染
-    query();
+    calculate();
   </script>
-<div style="margin-top:24px;padding:12px 16px;border-top:1px solid #e5e7eb;color:#374151;font-size:14px;line-height:1.6;">
-  <div style="font-weight:600;margin-bottom:6px;">备注</div>
-  <div>1.需同时多管采血，不同管采血量需相加，如有血清管，血量=所有管相加后血量-（血清管-1）*0.1</div>
-  <div>2.如有疑问请与医生再次核对。</div>
-</div>
 <script>window.parent.postMessage({ action: "ready" }, "*"); 
  
 window.console = new Proxy(console, {
